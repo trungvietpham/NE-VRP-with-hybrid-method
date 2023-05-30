@@ -46,6 +46,8 @@ class PrepareData():
         all_order = self.load_order()
         correlation = self.load_correlation()
         hierarchical_node = self.hierarchical_node(all_node)
+        
+        # Export dữ liệu phân cấp ra
         print('Đã chuẩn bị xong dữ liệu')
         
         return hierarchical_node, all_vehicle, all_order, correlation

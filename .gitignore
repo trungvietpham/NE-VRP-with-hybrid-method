@@ -2,6 +2,14 @@ data_analys.ipynb
 location.txt
 request_data.py
 Thông tin cung cấp.xlsx
+data/
+buucuc.csv
+Data Item.xlsx
+data_item.csv
+data_item.csv
+location.1.txt
+vehicle.csv
+tmp.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

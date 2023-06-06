@@ -9,7 +9,10 @@ class Solution:
         return 
     
     def find_solution(self):
-        all_data = PrepareData('vehicle_fname', 'node_fname', 'correlation_fname', 'order_fname').execute()
-        Phase1(None, None, None).execute(None, None)
-        Phase2(None, None, None).execute(None, None)
+        all_data = PrepareData(r'data\vehicles.csv', r'data\node.csv', r'data\correlations.csv', r'data\order.csv').execute()
+        encode = []
+        decode = encode[::-1]
+        for i in range(len(encode) - 1):
+            Phase1(all_data[1], all_data[2], all_data[3]).execute(all_data[0][encode[i]], all_data[0][encode[i+1]])
+            Phase2(None, None, None).execute(None, None)
         # Visualize()

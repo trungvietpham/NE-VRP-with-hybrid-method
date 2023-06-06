@@ -48,6 +48,11 @@ class Order:
         '''
         print('\tLấy code của node hiện đang chứa đơn hàng')
         return self.state[-1]
+
+    def print(self) -> None:
+        for k, v in self.__dict__.items():
+            print(f"{k}: {v}")
+        return
     
     
 class OrderController:
@@ -55,7 +60,7 @@ class OrderController:
         self.order_dict: dict[str, Order] = {}
     
     def add(self, order: Order) -> None:
-        print('\tĐã thêm order vào danh sách')
+        # print('\tĐã thêm order vào danh sách')
         self.order_dict[order.code] = order
         return
     

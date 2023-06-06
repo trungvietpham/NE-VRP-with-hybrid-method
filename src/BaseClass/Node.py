@@ -2,7 +2,7 @@ from BaseClass.Order import Order, OrderController
 
 
 class Node:
-    def  __init__(self, id, created_at, updated_at, address, code, end_time, latitude, longitude, name, start_time, type, capacity, order_hold:OrderController = None) -> None:
+    def  __init__(self, id, created_at, updated_at, address, code, end_time, latitude, longitude, name, start_time, tpe, capacity, order_hold:OrderController = None) -> None:
         self.id = id
         self.created_at = created_at
         self.updated_at = updated_at
@@ -13,9 +13,12 @@ class Node:
         self.start_time = start_time
         self.end_time = end_time
         self.name = name
-        self.type = type
-        self.capacity = capacity
-        self.order_hold = order_hold
+        self.type = tpe
+        if type(capacity) is int or type(capacity) is float: self.capacity = [capacity]
+        elif type(capacity) is None: self.capacity = []
+        else: self.capacity = list(capacity)
+        if order_hold is None: self.order_hold = OrderController()
+        else: self.order_hold = order_hold
     
     def get_code(self) -> str:
         print('Lấy code của node')
@@ -41,6 +44,14 @@ class Node:
     
     def get_order_hold(self) -> OrderController:
         return self.order_hold
+    
+    def get_location(self):
+        return self.latitude, self.longitude
+    
+    def print(self) -> None:
+        for item in self.__dict__.items():
+            print(f"{item[0]}: {item[1]}")
+        return
 
 class NodeController:
     def __init__(self) -> None:
@@ -69,6 +80,6 @@ class NodeController:
     def get_node_dict(self) -> dict[str, Node]:
         return self.node_dict
     
-    def get_code_list(self):
+    def get_code_list(self) -> list[str]:
         print('\tLấy thông tin code các node')
-        return self.node_dict.keys()
+        return list(self.node_dict.keys())

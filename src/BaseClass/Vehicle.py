@@ -20,7 +20,8 @@ class Vehicle:
                  type, 
                  width, 
                  dx_code, 
-                 vehicle_cost) -> None:
+                 vehicle_cost,
+                 manager_node) -> None:
         self.id = id
         self.created_at = created_at
         self.updated_at = updated_at
@@ -42,13 +43,19 @@ class Vehicle:
         self.width = width
         self.dx_code = dx_code
         self.vehicle_cost = vehicle_cost
+        self.manager_node = manager_node
+        return
+    
+    def print(self) -> None:
+        for item in self.__dict__.items():
+            print(f"{item[0]}: {item[1]}")
 
 class VehicleController:
     def __init__(self) -> None:
-        self.vehicle_dict: dict[str, Vehicle] = {}
+        self.vehicle_dict: dict[int, Vehicle] = {}
 
     def add(self, vehicle: Vehicle) -> None:
-        print('Thêm vehicle vào vehicleController')
+        # print('Thêm vehicle vào vehicleController')
         self.vehicle_dict[vehicle.id] = vehicle
         return
     
@@ -57,3 +64,8 @@ class VehicleController:
         if vehicle.id in self.vehicle_dict.keys():
             del self.vehicle_dict[vehicle.id]
         return
+    
+    def get_vehicle(self, id: int) -> Vehicle:
+        if id in self.vehicle_dict.keys():
+            return self.vehicle_dict[id]
+        else: return None

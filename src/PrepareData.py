@@ -79,9 +79,9 @@ class PrepareData():
         for i in range(len(data)):
             line = data.iloc[i]
             corr = Correlation(line['id'], line['created_at'], line['updated_at'], 
-                                                   line['distance'], line['from_node_code'], line['from_node_id'],
+                                                   line['distance'], str(int(float(line['from_node_code']))), line['from_node_id'],
                                                    line['from_node_name'], line['from_node_type'], line['risk_probability'],
-                                                   line['time'], line['to_node_code'], 
+                                                   line['time'], str(int(float(line['to_node_code']))), 
                                                    line['to_node_id'], line['to_node_name'], 
                                                    line['to_node_type'])
             correlation_controller.add(corr)

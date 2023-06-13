@@ -20,12 +20,14 @@ class Cluster:
         self.node_child.add(node)
         return
     
+    # def length(self):
+    #     return self.node_child.
     def print(self):
         print(self.node_child.get_code_list())
     
 class ClusterController:
     def __init__(self) -> None:
-        self.cluster_dict = {}
+        self.cluster_dict: dict[int, Cluster] = {}
     
     def get_cluster_dict(self) -> dict[int, Cluster]:
         return self.cluster_dict
@@ -38,3 +40,11 @@ class ClusterController:
         del self.cluster_dict[cluster.id]
         return
     
+    def to_json(self, filename): 
+        clusters = {}
+        for i in range(len(self.cluster_dict)):
+            clusters[i] = {}
+            clusters[i]['ID'] = self.cluster_dict[i].ID
+            clusters[i]['center'] = self.cluster_dict[i].center
+            # clusters[i]['n_childrens'] = self.cluster_dict[i].
+            

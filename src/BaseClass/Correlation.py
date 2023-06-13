@@ -15,13 +15,13 @@ class Correlation:
         self.created_at = created_at 
         self.updated_at = updated_at 
         self.distance = float(distance)
-        self.from_node_code = str(from_node_code)
+        self.from_node_code = str(int(from_node_code))
         self.from_node_id = from_node_id
         self.from_node_name = str(from_node_name)
         self.from_node_type = from_node_type
         self.risk_probability = risk_probability
         self.time = time
-        self.to_node_code = str(to_node_code) 
+        self.to_node_code = str(int(to_node_code)) 
         self.to_node_id = to_node_id
         self.to_node_name = str(to_node_name)
         self.to_node_type = to_node_type
@@ -34,11 +34,13 @@ class Correlation:
 
 class CorrelationController:
     def __init__(self) -> None:
-        self.correlation_dict = {}
+        self.correlation_dict: dict[str, Correlation] = {}
         return 
     
     def add(self, correlation: Correlation) -> None: 
-        self.correlation_dict[str(correlation.from_node_code) + '-' + str(correlation.to_node_code)] = correlation
+        # print(f'Add {str(correlation.from_node_code)} - {str(correlation.to_node_code)}')
+        # input('Add')
+        self.correlation_dict[str(correlation.from_node_code)+ '-'+str(correlation.to_node_code)] = correlation
         return
     
     def remove(self, correlation: Correlation) -> None: 
@@ -51,7 +53,11 @@ class CorrelationController:
     
     def get_correlation(self, start_code, end_code) -> Correlation:
         # print(f"{start_code}, {end_code}")
-        id = start_code + '-' + end_code
-        if id in self.correlation_dict.keys():
+        id = str(start_code) + '-' + str(end_code)
+        # print(f"ID: {id}")
+        # input('ID')
+        if id in self.correlation_dict:
+            # print(f"Found correlation = {self.correlation_dict[id]}")
+            # input('Corr: ')
             return self.correlation_dict[id]
         return None

@@ -54,6 +54,7 @@ class Phase:
         for _, node in node_controller.get_node_dict().items():
             location.append(node.get_location())
             self.code_map.append(node.code)
+        self.code_map = np.array(self.code_map)
         return np.array(location)
     
     def get_distance_matrix(self, code_list: list[str]) -> np.ndarray:
@@ -61,6 +62,7 @@ class Phase:
         Sử dụng self.correlation để lấy ma trận khoảng cách của các điểm trong node_list
         code_list: danh sách code của các node
         '''
+        print(code_list)
         self.reverse = []
         self.reverse = code_list.copy()
         distance_matrix = np.zeros((len(code_list), len(code_list)))
@@ -68,7 +70,9 @@ class Phase:
             for j in range(len(code_list)):
                 corr = self.correlation.get_correlation(code_list[i], code_list[j])
                 if corr is None: distance_matrix[i][j] = 1e9
-                else: distance_matrix[i][j] = corr.distance
+                else: 
+                    distance_matrix[i][j] = corr.distance
+                    # print(f'Corr = {distance_matrix[i][j]}')
         
         # Ko xét quãng đường quay về <=> distance_matrix[i,0] = 0
         for i in range(len(code_list)):
@@ -85,7 +89,7 @@ class Phase:
                 all_node.update_order_hold(order.get_current_state(), order.get_code(), 'add')
         return all_node
     
-    def get_phase_data(self, node_controller: NodeController):
+    def get_phase_data(self, node_controller: NodeController = None):
         res = {'order': {}, 'node': {}}
         res['order'] = self.order_controller.get_order_state()
         for order_code, node_code in res['order'].items():

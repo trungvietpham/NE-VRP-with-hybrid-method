@@ -11,4 +11,6 @@ class TSP:
         
         if algo == 'bitmasking':
             route, distance = solve_tsp_dynamic_programming(distance_matrix)
+        if algo == 'local_search':
+            route, distance = solve_tsp_local_search(distance_matrix)
         return route

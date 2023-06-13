@@ -1,3 +1,5 @@
+import sys
+sys.path.append("")
 from Solution import Solution
 
 if __name__ == '__main__':

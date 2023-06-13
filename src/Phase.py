@@ -1,4 +1,6 @@
 from abc import abstractmethod
+import os
+import json
 
 import numpy as np
 from BaseClass.Correlation import CorrelationController
@@ -6,11 +8,12 @@ from BaseClass.Vehicle import VehicleController
 from BaseClass.Order import OrderController
 from BaseClass.Node import NodeController
 class Phase:
-    def __init__(self, vehicle_controller: VehicleController, order_controller: OrderController, correlation: CorrelationController) -> None:
+    def __init__(self, vehicle_controller: VehicleController, order_controller: OrderController, correlation: CorrelationController, node_contain_vehicle: NodeController) -> None:
         self.vehicle_cotroller = vehicle_controller
         self.order_controller = order_controller
         self.correlation = correlation
-    
+        self.node_contain_vehicle = node_contain_vehicle
+
     def get_code_list_from_order(self, type: str) -> list:
         '''
         type: 'start' hoặc 'end' \n
@@ -19,7 +22,7 @@ class Phase:
         '''
         valid_list = ['start', 'end']
         assert type in valid_list, f'type must be in {valid_list}'
-        print('\tLấy thông tin về code từ các order')
+        # print('\tLấy thông tin về code từ các order')
         
         res = []
         if type == 'start':
@@ -37,9 +40,12 @@ class Phase:
         '''
         print('\tLấy tập hợp các node cần gửi hàng/ giao hàng')
         if code_list is None: return all_node
+        valid_node_code = all_node.get_code_list()
         res = NodeController()
         for code in code_list: 
-            res.add(all_node.get_node(code))
+            # print(code)
+            if code in valid_node_code:
+                res.add(all_node.get_node(code))
         return res
     
     def get_node_location(self, node_controller: NodeController) -> np.ndarray:
@@ -55,7 +61,7 @@ class Phase:
         Sử dụng self.correlation để lấy ma trận khoảng cách của các điểm trong node_list
         code_list: danh sách code của các node
         '''
-        print('\tLấy ra thông tin về ma trận khoảng cách giữa các node trong node_list')
+        self.reverse = []
         self.reverse = code_list.copy()
         distance_matrix = np.zeros((len(code_list), len(code_list)))
         for i in range(len(code_list)):
@@ -68,6 +74,31 @@ class Phase:
         for i in range(len(code_list)):
             distance_matrix[i][0] = 0
         return np.array(distance_matrix)
+    
+    def update_order(self, all_node: NodeController, all_order: OrderController) -> NodeController:
+        '''
+        Cập nhật thông tin trạng thái giữ hàng của từng node
+        '''
+        valid_node = all_node.get_code_list()
+        for order in list(all_order.get_order_dict().values()):
+            if order.get_current_state() in valid_node:
+                all_node.update_order_hold(order.get_current_state(), order.get_code(), 'add')
+        return all_node
+    
+    def get_phase_data(self, node_controller: NodeController):
+        res = {'order': {}, 'node': {}}
+        res['order'] = self.order_controller.get_order_state()
+        for order_code, node_code in res['order'].items():
+            if node_code not in res['node']: res['node'][node_code] = []
+            res['node'][node_code].append(order_code) 
+        return res
+    
+    def output_to_json(self, data, filename): 
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename)) 
+        json.dump(data, open(filename, 'w'), indent=4)
+        print('Dump data done')
+        return
     
     @abstractmethod
     def execute(self):

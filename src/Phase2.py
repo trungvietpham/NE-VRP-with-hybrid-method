@@ -1,12 +1,13 @@
 from BaseClass.Node import NodeController
 from BaseClass.Order import OrderController
 from BaseClass.Vehicle import VehicleController
+from BaseClass.Correlation import CorrelationController
 from Phase import Phase
 from TSP import TSP
 
 class Phase2(Phase):
-    def __init__(self, vehicle_controller: VehicleController, order_controller: OrderController, correlation: dict) -> None:
-        super().__init__(vehicle_controller, order_controller, correlation)
+    def __init__(self, vehicle_controller: VehicleController, order_controller: OrderController, correlation: CorrelationController, node_contain_vehicle: NodeController) -> None:
+        super().__init__(vehicle_controller, order_controller, correlation, node_contain_vehicle)
         
     def execute(self, start_node_controller:NodeController, end_node_controller:NodeController):
         print('Bắt đầu phase 2')

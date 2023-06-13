@@ -7,8 +7,8 @@ class TSP:
         pass
     
     def fit(self, distance_matrix: np.ndarray, algo: str = None) -> list[int]:
-        print('\tĐịnh tuyến đường đi ngắn nhất bằng phương pháp {}'.format(algo))
+        # print('\tĐịnh tuyến đường đi ngắn nhất bằng phương pháp {}'.format(algo))
         
         if algo == 'bitmasking':
-            route, distance = solve_tsp_local_search(distance_matrix)
+            route, distance = solve_tsp_dynamic_programming(distance_matrix)
         return route

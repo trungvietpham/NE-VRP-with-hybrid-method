@@ -22,6 +22,9 @@ class Vehicle:
                  dx_code, 
                  vehicle_cost,
                  manager_node) -> None:
+        '''
+        manager_node: code của manager node
+        '''
         self.id = id
         self.created_at = created_at
         self.updated_at = updated_at
@@ -52,7 +55,7 @@ class Vehicle:
 
 class VehicleController:
     def __init__(self) -> None:
-        self.vehicle_dict: dict[int, Vehicle] = {}
+        self.vehicle_dict: dict[str, Vehicle] = {}
 
     def add(self, vehicle: Vehicle) -> None:
         # print('Thêm vehicle vào vehicleController')
@@ -60,7 +63,7 @@ class VehicleController:
         return
     
     def remove(self, vehicle: Vehicle) -> None:
-        print('Xóa vehicle khỏi dict')
+        # print('Xóa vehicle khỏi dict')
         if vehicle.id in self.vehicle_dict.keys():
             del self.vehicle_dict[vehicle.id]
         return
@@ -69,3 +72,6 @@ class VehicleController:
         if id in self.vehicle_dict.keys():
             return self.vehicle_dict[id]
         else: return None
+    
+    def get_vehicle_dict(self) -> dict[int, Vehicle]:
+        return self.vehicle_dict

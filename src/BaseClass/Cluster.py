@@ -8,17 +8,20 @@ class Cluster:
         Cluster.ID += 1
 
     def get_list_node_code(self) -> list:
-        print('Lấy thông tin về code của các node nằm trong cluster')
-        self.node_child.get_code_list()
-        return
+        # print('Lấy thông tin về code của các node nằm trong cluster')
+        return self.node_child.get_code_list()
+        
     
     def get_center(self) -> list:
-        print('Lấy tọa độ tâm')
+        # print('Lấy tọa độ tâm')
         return self.center
     
     def add_node(self, node: Node) -> None:
         self.node_child.add(node)
         return
+    
+    def print(self):
+        print(self.node_child.get_code_list())
     
 class ClusterController:
     def __init__(self) -> None:

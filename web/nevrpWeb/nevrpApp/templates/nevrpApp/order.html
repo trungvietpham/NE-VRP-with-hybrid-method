@@ -1,0 +1,27 @@
+{% extends "nevrpApp/base.html" %}
+{% block content %}
+{% if order %}
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Code</th>
+        <th scope="col">Start node</th>
+        <th scope="col">End node</th> 
+        <th scope="col">Delivery mode</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {% for o in order %}
+        <td>{{o.code}}</td>
+        <td>{{o.sender_code}}</td>
+        <td>{{o.receiver_code}}</td>
+        <td>{{o.delivery_mode}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <h1>No Data</h1>
+{% endif %}
+{% endblock %}

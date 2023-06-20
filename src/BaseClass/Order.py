@@ -50,6 +50,10 @@ class Order:
         # print('\tLấy code của node hiện đang chứa đơn hàng')
         return self.state[-1]
     
+    def get_path(self):
+        if len(self.state) >= 2:
+            return self.state[-2] + ' -> ' + self.state[-1]
+        else: return self.state[-1]
     def get_start_code(self):
         return self.depot_id
     
@@ -91,18 +95,25 @@ class OrderController:
             res[code] = order.get_current_state()
         return res
     
+    def get_order_path(self):
+        res = {}
+        for code, order in self.order_dict.items():
+            res[code] = order.get_path()
+        return res
+    
     def get_order_code(self) -> list[str]:
         return list(self.order_dict.keys())
     
     def length(self) -> int:
         return len(list(self.order_dict.keys()))
 
-    def update_order_state(self, order_code: str, current_node_code: str) -> None:
+    def update_order_state(self, order_code: str, current_node_code: str, remove_flag = False) -> None:
         '''
         Update state của order có code là order_code
         '''
         if order_code not in self.order_dict.keys(): return
         self.order_dict[order_code].update_state(current_node_code)
+        if remove_flag: self.order_dict[order_code].state.pop(0)
         return
     
     def get_order(self, order_code) -> Order:

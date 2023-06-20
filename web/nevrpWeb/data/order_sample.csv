@@ -1,0 +1,3 @@
+code,created_at,updated_at,capacity,delivery_after_time,delivery_before_time,delivery_mode,order_value,weight,sender_code,receiver_code,slug
+EN866065202VN,2023-06-18 16:10:24,2023-06-18 16:10:24,1,0,86400,STANDARD,2,803.0,100000,100100,12
+EN866065304VN,2023-06-18 16:10:24,2023-06-18 16:10:24,1,0,86400,STANDARD,2,10293.0,100000,100100,13

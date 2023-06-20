@@ -63,7 +63,4 @@ class Phase2(Phase):
             self.output_to_json(phase_data, output_filename)
         
         return self.order_controller
-            
-                
-        print('Kết thúc phase 2')
         

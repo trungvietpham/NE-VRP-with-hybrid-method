@@ -6,7 +6,7 @@ import numpy as np
 from BaseClass.Correlation import CorrelationController
 from BaseClass.Vehicle import VehicleController
 from BaseClass.Order import OrderController
-from BaseClass.Node import NodeController
+from BaseClass.Node import Node, NodeController
 class Phase:
     def __init__(self, vehicle_controller: VehicleController, order_controller: OrderController, correlation: CorrelationController, node_contain_vehicle: NodeController) -> None:
         self.vehicle_cotroller = vehicle_controller
@@ -57,6 +57,32 @@ class Phase:
         self.code_map = np.array(self.code_map)
         return np.array(location)
     
+    def get_time_window(self, node_controller: NodeController) -> np.ndarray:
+        tw = []
+        for _, node in node_controller.get_node_dict().items():
+            tw.append([node.start_time, node.end_time])
+        return np.array(tw)
+        
+    def get_route_vehicle(self, target_node: Node, total_weight):
+        vehicle_list = target_node.vehicle_list
+        res = []
+        current_capacity = 0
+        while True:
+            best = -1
+            current_v = ''
+            for v in vehicle_list:
+                if self.vehicle_cotroller.get_vehicle(v).max_capacity > best: 
+                    best = self.vehicle_cotroller.get_vehicle(v).max_capacity
+                    current_v = v
+            current_capacity+=best
+            res.append(current_v)
+            if current_capacity>=total_weight: break
+            vehicle_list.remove(current_v)
+            best=0
+            if len(vehicle_list) == 0: return None
+        if current_capacity<total_weight: return None
+        return res
+    
     def get_distance_matrix(self, code_list: list[str]) -> np.ndarray:
         '''
         Sử dụng self.correlation để lấy ma trận khoảng cách của các điểm trong node_list
@@ -89,12 +115,16 @@ class Phase:
                 all_node.update_order_hold(order.get_current_state(), order.get_code(), 'add')
         return all_node
     
-    def get_phase_data(self, node_controller: NodeController = None):
-        res = {'order': {}, 'node': {}}
-        res['order'] = self.order_controller.get_order_state()
+    def get_phase_data(self, node_controller: NodeController = None, vehicle_route = None):
+        res = {'order': {}, 'node': {}, 'vehicle': {}}
+        res['order'] = self.order_controller.get_order_path()
         for order_code, node_code in res['order'].items():
             if node_code not in res['node']: res['node'][node_code] = []
             res['node'][node_code].append(order_code) 
+        
+        if vehicle_route is not None: 
+            res['vehicle'] = vehicle_route
+        
         return res
     
     def output_to_json(self, data, filename): 

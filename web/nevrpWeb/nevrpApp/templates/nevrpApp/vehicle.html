@@ -1,0 +1,27 @@
+{% extends "nevrpApp/base.html" %}
+{% block content %}
+{% if vehicle %}
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Code</th>
+        <th scope="col">Owner</th>
+        <th scope="col">Manager node</th> 
+        <th scope="col">Current node</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {% for n in vehicle %}
+        <td>{{n.code}}</td>
+        <td>{{n.driver_name}}</td>
+        <td>{{n.manager_node}}</td>
+        <td>{{n.current_node}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <h1>No Data</h1>
+{% endif %}
+{% endblock %}

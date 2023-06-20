@@ -1,4 +1,5 @@
 from BaseClass.Node import Node, NodeController
+from BaseClass.Order import OrderController
 class Cluster:
     ID = 0
     def __init__(self, center) -> None:
@@ -20,8 +21,12 @@ class Cluster:
         self.node_child.add(node)
         return
     
-    # def length(self):
-    #     return self.node_child.
+    def get_total_weight(self, order_controller: OrderController):
+        res = 0
+        for code,node in self.node_child.get_node_dict().items():
+            res += node.get_total_weight(order_controller)
+        return res
+            
     def print(self):
         print(self.node_child.get_code_list())
     

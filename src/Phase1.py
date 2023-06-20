@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn import preprocessing
 from BaseClass.Cluster import Cluster, ClusterController
 from BaseClass.Correlation import CorrelationController
 from BaseClass.Node import Node, NodeController
@@ -22,21 +23,39 @@ class Phase1(Phase):
         all_node = list(node_list.get_node_dict().values())
         dis = []
         for node in all_node:
-            # print(f"{np.array(node.get_location())}, {np.array(center)}")
-            dis.append(np.linalg.norm(np.array(node.get_location()) - np.array(center)))
+            candidate_vector = np.array(node.to_vector()).reshape(1, -1)
+            # print(candidate_vector)
+            # input()
+            candidate_vector = self.scaler.transform(candidate_vector)
+            # print(center)
+            # input()
+            center_vector = self.scaler.transform(np.array(center).reshape(1, -1))
+            # print(f"{candidate_vector}, {center_vector}")
+            # input()
+            dis.append(np.linalg.norm(candidate_vector - center_vector))
         return all_node[int(np.argmin(dis))]
     
     def cluster_phase(self, n_clusters:int, node_controller: NodeController) -> ClusterController:
         cluster_controller = ClusterController()
         node_location = self.get_node_location(node_controller)
+        node_tw = self.get_time_window(node_controller)
+        
+        input_clustering_array = np.append(node_location, node_tw, axis=1)
+        # print(f"Input array for clustering: \n{input_clustering_array}")
+        # input()
+        # Min max scaler data
+        self.scaler = preprocessing.MinMaxScaler()
+        input_clustering_array = self.scaler.fit_transform(input_clustering_array)
+        # print(f"{self.scaler.data_min_} - {self.scaler.data_max_}")
+        # input()
         clustering_model = KMeans(int(n_clusters))
-        if n_clusters > 1: 
-            clustering_model.fit(node_location)
-            output = clustering_model.predict(node_location)
-            center = clustering_model.cluster_centers_.copy()
-        else: 
-            output = [0 for i in range(len(node_location))] 
-            center = [[1,1]]
+        # if n_clusters > 1: 
+        clustering_model.fit(input_clustering_array)
+        output = clustering_model.predict(input_clustering_array)
+        center = self.scaler.inverse_transform(clustering_model.cluster_centers_.copy())
+        # else: 
+        #     output = [0 for i in range(len(node_location))] 
+        #     center = [[1,1]]
         cluster_list : list[Cluster] = []
         for i in range(n_clusters):
             cluster_list.append(Cluster(center[i]))
@@ -54,31 +73,44 @@ class Phase1(Phase):
         start_node_code_list = self.get_code_list_from_order('start')
         source_node_controller = self.get_node_set(start_node, start_node_code_list)
         dest_node_controller = end_node_controller.copy()
-        # print(source_node_controller.node_dict.keys())
-        # input('.....')
         n_clusters = dest_node_controller.length()
         while True: 
             if n_clusters == 0: n_clusters = 1
             if n_clusters <= source_node_controller.length(): break
-            n_clusters/=2
+            n_clusters/=5
             n_clusters = int(n_clusters)
             
         cluster_controller = self.cluster_phase(int(n_clusters), source_node_controller)
+        vehicle_route = {}
 
         print('Start TSP phase')
         for c in cluster_controller.get_cluster_dict().values():
             print(f'\tCluster: {c.id}, No. of node: {c.node_child.length()}')
+            # Tính toán khối lượng cần tải trọng 1 lượt
+            total_weight = c.get_total_weight(self.order_controller)
             # Tìm nearest node có thể điều xe được
-            nearest_node = self.find_nearest_node(c.get_center(), self.node_contain_vehicle)
+            node_contain_vehicle = self.node_contain_vehicle.copy()
+            
+            while True:
+                nearest_node = self.find_nearest_node(c.get_center(), node_contain_vehicle)
+                # Lấy các xe để chạy:
+                vehicle_list = self.get_route_vehicle(nearest_node, total_weight)
+                if node_contain_vehicle.length() == 0: 
+                    print('Bài toán không khả thi')
+                    exit(-1)
+                if vehicle_list is not None: break 
+                node_contain_vehicle.remove(nearest_node.get_code())
+            v = vehicle_list[0]
+            
             distance_matrix = self.get_distance_matrix([nearest_node.get_code()] + c.get_list_node_code())
-            # print(distance_matrix)
-            # input('...')
             if len(distance_matrix) < 20: algo = 'bitmasking'
             else: algo = 'local_search'
             route = TSP().fit(distance_matrix, algo=algo)
-            return_node = self.find_nearest_node(source_node_controller.get_node(self.reverse[int(route[-1])]).get_location(), dest_node_controller) 
+            return_node = self.find_nearest_node(source_node_controller.get_node(self.reverse[int(route[-1])]).to_vector(), dest_node_controller) 
             print('Update: ')
+            if v not in vehicle_route: vehicle_route[v] = []
             for i in route: 
+                vehicle_route[v].append(self.reverse[i])
                 if i == 0: 
                     continue
                 else: 
@@ -87,15 +119,19 @@ class Phase1(Phase):
                 order_code_list: list[str] = node.get_order_hold()
                 if len(order_code_list) == 0: continue
                 for order_code in order_code_list:
+                    # Update thông tin trạng thái đơn hàng và trang thái giữ hàng của node
                     self.order_controller.update_order_state(order_code, return_node.get_code())
-                    dest_node_controller.update_order_hold(node.get_code(), order_code, 'add')
-                    
+                    source_node_controller.update_order_hold(node.get_code(), order_code, 'remove')
+                    # print('Remove done')
+                    dest_node_controller.update_order_hold(return_node.get_code(), order_code, 'add')
+                    self.vehicle_cotroller.update_vehicle_state(v, return_node.get_code())
+            vehicle_route[v].append(return_node.get_code())
         print('Kết thúc phase 1')
-        for node in list(dest_node_controller.get_node_dict().values()):
-            if len(node.order_hold) > 0: 
-                print(f"{node.get_code()}: {node.order_hold}")
-                input('Order hold')
+        # for node in list(dest_node_controller.get_node_dict().values()):
+            # if len(node.order_hold) > 0: 
+                # print(f"{node.get_code()}: {node.order_hold}")
+                # input('Order hold')
         if output_filename is not None:
-            phase_data = self.get_phase_data(dest_node_controller)
+            phase_data = self.get_phase_data(dest_node_controller, vehicle_route=vehicle_route)
             self.output_to_json(phase_data, output_filename)
         return self.order_controller

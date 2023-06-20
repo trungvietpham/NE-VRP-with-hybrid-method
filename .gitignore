@@ -11,6 +11,7 @@ vehicle.csv
 tmp.py
 tmp
 scenarios
+note.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,27 @@
+{% extends "nevrpApp/base.html" %}
+{% block content %}
+{% if node %}
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Code</th>
+        <th scope="col">Address</th>
+        <th scope="col">Type</th> 
+        <th scope="col">Location</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {% for n in node %}
+        <td>{{n.code}}</td>
+        <td>{{n.address}}</td>
+        <td>{{n.type}}</td>
+        <td><a href="{{n.get_url}}" target="_blank">Open in google maps</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <h1>No Data</h1>
+{% endif %}
+{% endblock %}

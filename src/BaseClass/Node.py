@@ -15,9 +15,9 @@ class Node:
         self.end_time = int(end_time)
         self.name = str(name)
         self.type = tpe
-        if type(capacity) is int or type(capacity) is float: self.capacity = [capacity]
-        elif type(capacity) is None: self.capacity = []
-        else: self.capacity = list(capacity)
+        # if type(capacity) is int or type(capacity) is float: self.capacity = [capacity]
+        if type(capacity) is None: self.capacity = 0
+        else: self.capacity = capacity
         if order_hold is None: self.order_hold = []
         else: self.order_hold = order_hold
         if vehicle_list is None: self.vehicle_list: list[str] = []
@@ -28,14 +28,17 @@ class Node:
         return self.code
     
     def _add_order_hold(self, order_code: str) -> None:
-        # print('Thêm order_code vào danh sách order_hold')
         self.order_hold.append(order_code)
         return
     
     def _remove_order_hold(self, order_code: str) -> None:
-        # print('Xóa order khỏi order_hold')
         if order_code in self.order_hold:    
-            self.order_hold.remove(order_code)
+            # del self.order_hold[order_code]
+            # self.order_hold.remove(order_code)
+            self.order_hold = set(self.order_hold)
+            self.order_hold.discard(order_code)
+            self.order_hold = list(self.order_hold)
+            # self.order_hold.discard()
         return 
     
     def update_order_hold(self, order_code, type: str) -> None:
@@ -60,6 +63,17 @@ class Node:
         self.vehicle_list.append(vehicle_code)
         return 
     
+    def get_total_weight(self, order_controller: OrderController):
+        '''
+        Lấy khối lượng của các đơn ở điểm
+        '''
+        res = 0
+        for code in self.order_hold:
+            res += order_controller.get_order(code).weight
+        return res
+    
+    def to_vector(self):
+        return [self.latitude, self.longitude, self.start_time, self.end_time]
     def print(self) -> None:
         for item in self.__dict__.items():
             print(f"{item[0]}: {item[1]}")
@@ -74,10 +88,10 @@ class NodeController:
         if node.code not in self.node_dict.keys(): self.node_dict[node.code] = node
         return
     
-    def remove(self, node: Node) -> None:
+    def remove(self, node_code: str) -> None:
         # print('Xóa 1 node khỏi nodeController')
-        if node.code in self.node_dict.keys():
-            del self.node_dict[node.code]
+        if node_code in self.node_dict.keys():
+            del self.node_dict[node_code]
         return
 
     def length(self) -> int: 
@@ -110,7 +124,8 @@ class NodeController:
         Update trạng thái `type` của order có code là `order_code` trong `node_code`\n
         type: 'add' or 'remove'
         '''
-        if node_code not in self.node_dict: return
+        if node_code not in self.node_dict: 
+            return
         self.node_dict[node_code].update_order_hold(order_code, type)
         # if type == 'add':
         # print(self.node_dict[node_code].order_hold)

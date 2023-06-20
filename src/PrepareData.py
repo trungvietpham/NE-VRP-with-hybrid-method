@@ -97,7 +97,7 @@ class PrepareData():
                 all_order.update_order_state(code, order.get_start_code())
         if by == 'end':
             for code, order in all_order.get_order_dict().items():
-                all_order.update_order_state(code, order.get_end_code())
+                all_order.update_order_state(code, order.get_end_code(), remove_flag=True)
                 
         return all_order
     

@@ -1,3 +1,4 @@
+import random
 import pandas as pd
 
 def port_node(filename):
@@ -17,16 +18,20 @@ def port_node(filename):
     
     c_id = 0
     data = pd.read_csv(filename, sep='|', index_col=False)
+    # print(len(data))
+    # input()
     for i in range(len(data)):
         # print(i)
         line = data.iloc[i]
-        if str(line['Latitude']) == 'nan' or str(line['Longitude']) == 'nan':
-            continue
+        # print(line)
+        # input('Stop')
+        # if str(line['Latitude']) == 'nan' or str(line['Longitude']) == 'nan':
+        #     continue
         
         # if(i==9): print(str(line['Longitude']))
         
         lat, lng = float('.'.join(str(line['Latitude']).split(','))), float('.'.join(str(line['Longitude']).split(',')))
-        if lat<lng: lat, lng = lng, lat
+        if lat>lng: lat, lng = lng, lat
         id.append(c_id)
         created_at.append('')
         updated_at.append('')
@@ -34,17 +39,18 @@ def port_node(filename):
         longitude.append(lng)
         address.append(str(line['Address']) + ', '+str(line['districtname'])+', '+str(line['provincename']))
         code.append(line['PoSCode'])
-        start_time.append(0)
-        end_time.append(60*60*24)
+        rand = random.randint(0,1)
+        start_time.append(rand * 60*60*24/2)
+        end_time.append((rand+1)*60*60*24/2)
         name.append(str(line['unitname']) + ', ' + str(line['PoSName']))
         tpe.append(line['PoSLevelCode'])
-        capacity.append([1e8])
+        capacity.append(1e8)
         c_id+=1
-    
+    print(f"{len(latitude)}, {len(longitude)}, {len(id)}, {len(created_at), len(updated_at), len(address), len(code), len(start_time), len(end_time), len(name), len(tpe), len(capacity), len(data['ProvinceCode'].tolist())}")
     save_data = pd.DataFrame(data={'id': id, 'created_at':created_at, 'updated_at': updated_at, 'latitude': latitude, 'longitude': longitude, 
                                    'address':address, 'code': code, 'start_time': start_time, 'end_time': end_time, 
-                                   'name': name, 'type': tpe, 'capacity': capacity})
-    
+                                   'name': name, 'type': tpe, 'capacity': capacity, 'province_code': data['ProvinceCode'].tolist(), 
+                                   'district_code': data['DistrictCode'].tolist(), 'commune_code': data['CommuneCode'].tolist()})
     save_data.to_csv('data/node.csv')
     
 def port_order(filename, node_fname):
@@ -55,6 +61,7 @@ def port_order(filename, node_fname):
     customer_id = []
     depot_id = []
     code = []
+    weight = []
     for i in range(len(data)):
         line = data.iloc[i]
         if str(line['AcceptancePOSCode']) == 'nan' or str(line['POSCode']) == 'nan': continue
@@ -62,6 +69,7 @@ def port_order(filename, node_fname):
         depot_id.append(str(int(line['AcceptancePOSCode'])))
         customer_id.append(str(int(line['POSCode'])))
         code.append(line['ItemCode'])
+        weight.append(line['Weight'])
     
     save_data = pd.DataFrame(data={'id': [i+1 for i in range(len(customer_id))], 'created_at': ['' for i in range(len(customer_id))], 
                                    'updated_at': ['' for i in range(len(customer_id))], 'capacity': [1 for i in range(len(customer_id))],
@@ -71,7 +79,7 @@ def port_order(filename, node_fname):
                                    'order_value': [10000 for i in range(len(customer_id))], 
                                    'time_service': [10 for i in range(len(customer_id))],
                                    'time_loading': [2 for i in range(len(customer_id))],
-                                   'weight': [1 for i in range(len(customer_id))], 
+                                   'weight': weight, 
                                    'customer_id': customer_id, 'depot_id': depot_id, 'dx_code': ['' for i in range(len(customer_id))]})
     save_data.to_csv('data/order.csv')
     
@@ -86,7 +94,7 @@ def port_vehicle(filename, node_fname):
         line = data.iloc[i]
         if int(line['BuuCuc_QuanLy']) not in valid_node: continue
         
-        capacity.append([float(line['TotalLoad'])])
+        capacity.append(float(line['TotalLoad'])*1000)
         manager_node.append(int(line['BuuCuc_QuanLy']))
         v_type.append(line['TransportGroupName'])
     
@@ -119,7 +127,7 @@ def distance(point1, point2):
     '''
     Tính khoảng cách l2 giữa 2 điểm tọa độ lat long, trả về khoảng cách km
     '''
-    R = 6378.137; # Radius of earth in KM
+    R = 6371.137; # Radius of earth in KM
     dLat = (point2[0] - point1[0])*np.pi/180
     dLon = (point2[1]-point1[1])*np.pi/180
     a = np.sin(dLat/2) ** 2 + np.cos(point1[0]*np.pi/180) * np.cos(point2[0]* np.pi / 180) * np.sin(dLon/2) * np.sin(dLon/2)
@@ -171,9 +179,59 @@ def port_correlation(filename, node_fname):
                                      'to_node_type': ['' for i in range(len(dis))]})
     save_data.to_csv('data/correlations.csv')
         
-        
+def port_correlation2(filename, node_fname):
+    node_data = pd.read_csv(node_fname, sep=',', index_col=False)
+    from_node_code = []
+    to_node_code = []
+    from_node_type = []
+    to_node_type = []
+    dis = []
+    epsilon = 10
+    for i in range(len(node_data)): 
+        print(f'i = {i}')
+        line_i = node_data.iloc[i]
+        for j in range(i, len(node_data)):
+            line_j = node_data.iloc[j]
+            flag = 0
+            if line_i['type'] == line_j['type'] and line_j['type'] == 'GD1': flag = 1
+            elif line_i['province_code'] == line_j['province_code']:
+                if (line_i['type'] == 'GD1' or line_i['type'] == 'GD2') and (line_j['type'] == 'GD1' or line_j['type'] == 'GD2'): flag = 1
+                elif ((line_i['type'] == 'GD2' or line_i['type'] == 'GD3') and (line_j['type'] == 'GD3' or line_j['type'] == 'GD2')) and \
+                    line_i['district_code'] == line_j['district_code']: flag = 1
+                elif distance([line_i['latitude'], line_i['longitude']], [line_j['latitude'], line_j['longitude']]) < epsilon: flag = 1
+            
+            if flag == 1:
+                lldis = distance([line_i['latitude'], line_i['longitude']], [line_j['latitude'], line_j['longitude']])
+                from_node_code.append(line_i['code'])
+                to_node_code.append(line_j['code'])
+                from_node_type.append(line_i['type'])
+                to_node_type.append(line_j['type'])
+                dis.append(lldis)
+                from_node_code.append(line_j['code'])
+                to_node_code.append(line_i['code'])
+                from_node_type.append(line_j['type'])
+                to_node_type.append(line_i['type'])
+                dis.append(lldis)
+    save_data = pd.DataFrame(data = {'id': [i+1 for i in range(len(dis))], 
+                                     'created_at': ['' for i in range(len(dis))], 
+                                     'updated_at': ['' for i in range(len(dis))],
+                                     'distance': dis,
+                                     'from_node_code': from_node_code,
+                                     'from_node_id': ['' for i in range(len(dis))],
+                                     'from_node_name': ['' for i in range(len(dis))],
+                                     'from_node_type': from_node_type, 
+                                     'risk_probability': ['' for i in range(len(dis))], 
+                                     'time': ['' for i in range(len(dis))], 
+                                     'to_node_code': to_node_code,
+                                     'to_node_id': ['' for i in range(len(dis))],
+                                     'to_node_name': ['' for i in range(len(dis))],
+                                     'to_node_type': to_node_type})
+    save_data.to_csv('data/correlations.csv')
+
 if __name__ == '__main__':
-    port_node('buucuc.csv')
-    port_vehicle('vehicle.csv', 'buucuc.csv')
-    port_order('data_item.csv', 'buucuc.csv')
-    port_correlation('correlation.csv', r'data\node.csv')
+    # port_node(r'tmp\buucuc.csv')
+    port_vehicle('vehicle.csv', r'tmp\buucuc.csv')
+    # port_order('data_item.csv', r'tmp\buucuc.csv')
+    # port_correlation2('correlation.csv', r'data\node.csv')
+    
+    # print(distance([21.02616843,105.8535759], [21.153,105.4954]))

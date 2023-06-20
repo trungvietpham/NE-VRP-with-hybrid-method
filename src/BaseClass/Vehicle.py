@@ -21,7 +21,8 @@ class Vehicle:
                  width, 
                  dx_code, 
                  vehicle_cost,
-                 manager_node) -> None:
+                 manager_node,
+                 current_node: str = None) -> None:
         '''
         manager_node: code của manager node
         '''
@@ -47,6 +48,11 @@ class Vehicle:
         self.dx_code = dx_code
         self.vehicle_cost = vehicle_cost
         self.manager_node = manager_node
+        self.current_node = current_node
+        return
+    
+    def update_current_node(self, current_node: str):
+        self.current_node = current_node
         return
     
     def print(self) -> None:
@@ -75,3 +81,13 @@ class VehicleController:
     
     def get_vehicle_dict(self) -> dict[int, Vehicle]:
         return self.vehicle_dict
+    
+    def update_vehicle_state(self, v_code, current_state):
+        if v_code in self.vehicle_dict:
+            self.vehicle_dict[v_code].update_current_node(current_state)
+        return
+    
+    def print(self):
+        for code in self.vehicle_dict:
+            print(self.vehicle_dict[code].max_capacity)
+            input('Stop')

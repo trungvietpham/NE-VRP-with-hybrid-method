@@ -1,0 +1,57 @@
+{% extends "nevrpApp/base.html" %}
+{% block content %}
+{% if vehicle_result %}
+	<h1>Search vehicle code</h1>
+	<div>
+        <form method=POST action="{% url 'search-vehicle' %}">
+            {% csrf_token %}
+            <input class="form-control mr-sm-2" type="search" placeholder="Search order code" aria-label="Search" name="code">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </div>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Code</th>
+            </tr>
+        </thead>
+      <tbody>
+      <tr>
+            {% for v in vehicle_result %}
+        <td>{{v}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% elif res %}
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Routes number</th>
+      <th scope="col">Start node</th>
+      <th scope="col">End node</th> 
+      <th scope="col">Orders</th>
+      <th scope="col">Type</th>
+      <th scope="col">Phase</th>
+      <th scope="col">View in maps</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      {% for n in res %}
+      <td>{{n.routes_number}}</td>
+      <td>{{n.start_node}}</td>
+      <td>{{n.end_node}}</td>
+      <td>{{n.order}}</td>
+      <td>{{n.type}}</td>
+      <td>{{n.phase}}</td>
+      <td><a href="{{n.view_in_maps}}" target="_blank">Open</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<h1>No Data</h1>
+{% endif %}
+{% endblock %}

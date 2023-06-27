@@ -1,26 +1,12 @@
 {% extends "nevrpApp/base.html" %}
 {% block content %}
-{% if order_result %}
-	<h1>Search order code</h1>
-	<form method=POST action="{% url 'search-order' %}">
+{% if node_result %}
+	<h1>Search node code</h1>
+	<form method=POST action="{% url 'search-node' %}">
         {% csrf_token %}
-        <input class="form-control mr-sm-2" type="search" placeholder="Search order code" aria-label="Search" name="code">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search node code" aria-label="Search" name="code">
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
       </form>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Code</th>
-            </tr>
-        </thead>
-      <tbody>
-      <tr>
-            {% for v in order_result %}
-        <td>{{v}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 {% elif res %}
 <table class="table">

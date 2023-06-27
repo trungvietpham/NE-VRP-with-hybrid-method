@@ -3,8 +3,7 @@ from BaseClass.Order import Order, OrderController
 
 
 class Node:
-    def  __init__(self, id, created_at, updated_at, address, code, end_time, latitude, longitude, name, start_time, tpe, capacity, order_hold:list[str] = None, vehicle_list: list[str] = None) -> None:
-        self.id = id
+    def  __init__(self, created_at, updated_at, address, code, end_time, latitude, longitude, name, start_time, tpe, capacity, province_code, district_code, order_hold:list[str] = None, vehicle_list: list[str] = None) -> None:
         self.created_at = created_at
         self.updated_at = updated_at
         self.latitude = float(latitude)
@@ -18,6 +17,8 @@ class Node:
         # if type(capacity) is int or type(capacity) is float: self.capacity = [capacity]
         if type(capacity) is None: self.capacity = 0
         else: self.capacity = capacity
+        self.province_code = province_code
+        self.district_code = district_code
         if order_hold is None: self.order_hold = []
         else: self.order_hold = order_hold
         if vehicle_list is None: self.vehicle_list: list[str] = []
@@ -25,7 +26,7 @@ class Node:
     
     def get_code(self) -> str:
         # print('Lấy code của node')
-        return self.code
+        return str(self.code)
     
     def _add_order_hold(self, order_code: str) -> None:
         self.order_hold.append(order_code)
@@ -137,4 +138,13 @@ class NodeController:
         for code in self.node_dict:
             res.add(copy.deepcopy(self.node_dict[code]))
         return res
+    
+    def print(self):
+        print(self.get_code_list())
+        return 
+    
+    def __add__(self, node_controller):
+        for node in list(node_controller.get_node_dict().values()):
+            self.add(node)
+        return
     

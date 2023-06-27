@@ -6,8 +6,7 @@ class Vehicle:
                  available, 
                  average_fee_transport, 
                  average_gas_consume, 
-                 average_velocity, 
-                 fixed_cost, 
+                 average_velocity,
                  driver_name, 
                  gas_price, 
                  height, 
@@ -19,7 +18,6 @@ class Vehicle:
                  name, 
                  type, 
                  width, 
-                 dx_code, 
                  vehicle_cost,
                  manager_node,
                  current_node: str = None) -> None:
@@ -33,7 +31,6 @@ class Vehicle:
         self.average_fee_transport = average_fee_transport
         self.average_gas_consume = average_gas_consume
         self.average_velocity = average_velocity
-        self.fixed_cost = fixed_cost
         self.driver_name = driver_name
         self.gas_price = gas_price
         self.height = height
@@ -45,10 +42,9 @@ class Vehicle:
         self.name = name
         self.type = type
         self.width = width
-        self.dx_code = dx_code
         self.vehicle_cost = vehicle_cost
-        self.manager_node = manager_node
-        self.current_node = current_node
+        self.manager_node = str(manager_node)
+        self.current_node = str(current_node)
         return
     
     def update_current_node(self, current_node: str):
@@ -87,7 +83,11 @@ class VehicleController:
             self.vehicle_dict[v_code].update_current_node(current_state)
         return
     
+    def __add__(self, vehicle_controller):
+        for vehicle in list(vehicle_controller.get_vehicle_dict().values()):
+            self.add(vehicle)
+        return
+    
     def print(self):
         for code in self.vehicle_dict:
             print(self.vehicle_dict[code].max_capacity)
-            input('Stop')

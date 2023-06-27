@@ -22,7 +22,6 @@ class Phase:
         '''
         valid_list = ['start', 'end']
         assert type in valid_list, f'type must be in {valid_list}'
-        # print('\tLấy thông tin về code từ các order')
         
         res = []
         if type == 'start':
@@ -38,12 +37,10 @@ class Phase:
         Lấy các node có code trong code_list.
         Nếu code_list = None thì trả về all_node
         '''
-        print('\tLấy tập hợp các node cần gửi hàng/ giao hàng')
         if code_list is None: return all_node
         valid_node_code = all_node.get_code_list()
         res = NodeController()
         for code in code_list: 
-            # print(code)
             if code in valid_node_code:
                 res.add(all_node.get_node(code))
         return res
@@ -67,7 +64,9 @@ class Phase:
         vehicle_list = target_node.vehicle_list
         res = []
         current_capacity = 0
+        print(f"target node: {target_node.code}, vehicle list: {vehicle_list}, total weight: {total_weight}")
         while True:
+            if len(vehicle_list) == 0: return None
             best = -1
             current_v = ''
             for v in vehicle_list:
@@ -77,9 +76,10 @@ class Phase:
             current_capacity+=best
             res.append(current_v)
             if current_capacity>=total_weight: break
+            else: print(f"current capa: {current_capacity}, total weight: {total_weight}")
             vehicle_list.remove(current_v)
             best=0
-            if len(vehicle_list) == 0: return None
+            
         if current_capacity<total_weight: return None
         return res
     
@@ -88,7 +88,7 @@ class Phase:
         Sử dụng self.correlation để lấy ma trận khoảng cách của các điểm trong node_list
         code_list: danh sách code của các node
         '''
-        print(code_list)
+        # print(code_list)
         self.reverse = []
         self.reverse = code_list.copy()
         distance_matrix = np.zeros((len(code_list), len(code_list)))
@@ -103,6 +103,10 @@ class Phase:
         # Ko xét quãng đường quay về <=> distance_matrix[i,0] = 0
         for i in range(len(code_list)):
             distance_matrix[i][0] = 0
+        
+        # print(code_list)
+        # print(distance_matrix)
+        # input('asdwqwe')
         return np.array(distance_matrix)
     
     def update_order(self, all_node: NodeController, all_order: OrderController) -> NodeController:
@@ -115,21 +119,29 @@ class Phase:
                 all_node.update_order_hold(order.get_current_state(), order.get_code(), 'add')
         return all_node
     
-    def get_phase_data(self, node_controller: NodeController = None, vehicle_route = None):
-        res = {'order': {}, 'node': {}, 'vehicle': {}}
-        res['order'] = self.order_controller.get_order_path()
-        for order_code, node_code in res['order'].items():
-            if node_code not in res['node']: res['node'][node_code] = []
-            res['node'][node_code].append(order_code) 
+    def update_phase_data(self, node_controller: NodeController = None, vehicle_route = None, phase_data = None, skip_node = False):
+        res = phase_data
+        if res is None: res = {}
+        if 'order' not in res: res['order'] = {}
+        if 'node' not in res and not skip_node: res['node'] = {}
+        if 'vehicle' not in res: res['vehicle'] = {}
+        # print(self.order_controller.get_order_path())
+        res['order'].update(self.order_controller.get_order_path())
+        if not skip_node:
+            for order_code, node_code in res['order'].items():
+                node_code = node_code.split('->')[0].strip()
+                if node_code not in res['node']: res['node'][node_code] = []
+                res['node'][node_code].append(order_code) 
         
         if vehicle_route is not None: 
-            res['vehicle'] = vehicle_route
+            res['vehicle'].update(vehicle_route)
         
         return res
     
     def output_to_json(self, data, filename): 
         if not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename)) 
+        # print(data.keys())
         json.dump(data, open(filename, 'w'), indent=4)
         print('Dump data done')
         return
